@@ -10,6 +10,9 @@ pygame.display.set_caption("BANG!")
 
 image_scale = 0.5 * screen_scale
 
+size_bg_w = screen.get_size()[0]
+size_bg_h = screen.get_size()[1]
+
 image_board0 = pygame.image.load("image/board/board0.png")
 image_board1 = pygame.image.load("image/board/board1.png")
 image_board2 = pygame.image.load("image/board/board2.png")
@@ -42,6 +45,7 @@ image_size_hs.append(image_board7.get_rect().size[1])
 image_size_ws = [x * image_scale for x in image_size_ws]
 image_size_hs = [x * image_scale for x in image_size_hs]
 
+# 사이즈 변경
 image_board0 = pygame.transform.scale(image_board0, (image_size_ws[0], image_size_hs[0]))
 image_board1 = pygame.transform.scale(image_board1, (image_size_ws[1], image_size_hs[1]))
 image_board2 = pygame.transform.scale(image_board2, (image_size_ws[2], image_size_hs[2]))
@@ -52,12 +56,20 @@ image_board6 = pygame.transform.scale(image_board6, (image_size_ws[6], image_siz
 image_board7 = pygame.transform.scale(image_board7, (image_size_ws[7], image_size_hs[7]))
 
 
-
-
-
 image_bullet_front = pygame.image.load("image/bullet/bullet_front.png")
 image_bullet_back = pygame.image.load("image/bullet/bullet_back.png")
 
+# 사이즈 변경
+image_bullet_front = pygame.transform.scale(image_bullet_front, (\
+  image_bullet_front.get_rect().size[0] * image_scale, image_bullet_front.get_rect().size[1] * image_scale))
+image_bullet_back = pygame.transform.scale(image_bullet_back, (\
+  image_bullet_back.get_rect().size[0] * image_scale, image_bullet_back.get_rect().size[1] * image_scale))
+
+# 회전
+image_bullet_front_down = pygame.transform.rotate(image_bullet_front, 145)
+image_bullet_back_down = pygame.transform.rotate(image_bullet_back, 145)
+image_bullet_front_up = pygame.transform.rotate(image_bullet_front, 325)
+image_bullet_back_up = pygame.transform.rotate(image_bullet_back, 325)
 
 sheriff = "sheriff"
 deputy = "deputy"
@@ -380,20 +392,54 @@ for i in range(player_cnt):
 #     print(players[i].hand.pop().filename, end="  ")
 #   print()
 
-size_bg_w = screen.get_size()[0]
-size_bg_h = screen.get_size()[1]
+print(player0.job.name)
 
 play = True
 while play:
   for event in pygame.event.get():
     if event.type == pygame.QUIT:
       play = False
+    if event.type == pygame.MOUSEBUTTONDOWN:
+      print(pygame.mouse.get_pos())
 
   screen.fill((0,0,0))
   
   if player_cnt == 2:
+    # 보드판 그리기
     screen.blit(player0.image_board, ((size_bg_w - image_size_ws[0]) / 2, size_bg_h - image_size_hs[0]))
     screen.blit(player1.image_board, ((size_bg_w - image_size_ws[1]) / 2, 0))
+
+    # 총알 그리기
+    for i in range(player_cnt):
+
+      bullet_start_pos_xs = []
+      bullet_start_pos_ys = []
+      bullet_gap = 0
+
+      bullet_start_pos_xs.extend([580, 930])
+      bullet_start_pos_ys.extend([595, 225])
+
+      # 남은 생명력
+      for j in range(players[i].life):
+
+        # player별
+        if i == 0:
+          screen.blit(image_bullet_front_down, (bullet_start_pos_xs[i] + bullet_gap, bullet_start_pos_ys[i]))
+        elif i == 1:
+          screen.blit(image_bullet_front_up, (bullet_start_pos_xs[i] - bullet_gap, bullet_start_pos_ys[i]))
+
+        bullet_gap += 85
+
+      # 잃은 생명력
+      losslife = players[i].maxlife - players[i].life
+      for j in range(losslife):
+
+        # player별
+        if i == 0:
+          screen.blit(image_bullet_back_down, (bullet_start_pos_xs[i] + bullet_gap, bullet_start_pos_ys[i]))
+        elif i == 1:
+          screen.blit(image_bullet_back_up, (bullet_start_pos_xs[i] - bullet_gap, bullet_start_pos_ys[i]))
+
 
   pygame.display.update()
 
